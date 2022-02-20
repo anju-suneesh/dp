@@ -52,3 +52,130 @@ export const onDateClick = (day, inputRef) => {
     }
     return monthDetails;
   }
+  
+  ***************************************************************************************************************************************************
+  
+  import React, { useState, useRef, useEffect } from "react";
+import './Polar.css';
+import { getMonthName, onDateClick, setmonthDeatsils } from './datePickerFunc'
+
+function Polar() {
+    const contRef = useRef(null);
+    const [date, setDate] = useState(new Date().getDate());
+    const [year, setYear] = useState(new Date().getFullYear());
+    const [month, setMonth] = useState(new Date().getMonth()); // return month index so, Jan is 0 , Feb is 1 and s on 
+    const [showCalendar, setshowCalendar] = useState(false);
+    
+    const weeks = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const inputRef = React.createRef()
+
+    useEffect(() => { 
+
+      const calendarHide = (e) => {
+        
+        if(showCalendar && contRef && !contRef.current.contains(e.target)) {
+          //console.log(showCalendar && contRef && !contRef.current.contains(e.target))
+           setshowCalendar(false);
+        }
+      };
+      window.addEventListener("click", calendarHide);
+      return () => {
+        window.removeEventListener("click", calendarHide);
+      };
+      
+    }, [showCalendar]);
+
+    const setMonthnumber = (monthinx) => {
+        let mon = monthinx;
+        let yr = year;
+
+        if(mon === 12){
+          mon = 0;
+          yr = yr + 1;
+        }
+        
+        if(mon === -1){
+          mon = 11;
+          yr = yr - 1;
+          
+        }
+          setMonth(mon);
+          setYear(yr)
+    }
+
+    const isCurrentDay = day => {
+
+      var tm = String(new Date(day.year, day.month  , day.date));
+      var dayDetail =  String(new Date(Date.now()));
+      tm = tm.split(" ");
+      dayDetail =  dayDetail.split(" ");
+      console.log(day.month, day.year, day.date);
+      
+      return (Number(dayDetail[2]) === Number(tm[2]) && dayDetail[1] === tm[1] && dayDetail[3] === tm[3])
+    }
+
+    const renderBody = ( year, month ) => {
+
+      let monthDetails = setmonthDeatsils(year, month)
+      
+      const daysMarkup = monthDetails.map((day, index) => (isCurrentDay(day)) ? (
+        
+      <div onClick={() => onDateClick(day, inputRef)} onDoubleClick={()=> setshowCalendar(false)}
+      style={{ backgroundColor:"#2196f3",width:"13%", height:"35px", float:"left", textAlign: "center", border: "1px solid #B2BEB5"}}>
+        <span id={day.date+" "+day.month+" "+day.year} onClick={() => onDateClick(day, inputRef)} onDoubleClick={()=> setshowCalendar(false)}>{day.date}</span>
+      </div>) : (
+        
+        <div onClick={() => onDateClick(day, inputRef)} onDoubleClick={()=> setshowCalendar(false)}
+        style={{ width:"13%", height:"35px", float:"left", textAlign: "center", border: "1px solid #B2BEB5"}}>
+          <span id={day.date+" "+day.month+" "+day.year} onClick={() => onDateClick(day, inputRef)} onDoubleClick={()=> setshowCalendar(false)}>{day.date}</span>
+        </div>));
+     return daysMarkup;
+    }
+
+    return (
+        <React.Fragment>
+          <div ref={contRef} style={{width:"33%"}}>
+
+          <input ref={inputRef} onClick={()=> setshowCalendar(true)} style={{width:"90%", marginLeft: "7px"}}/>
+            {showCalendar ? (
+            <div className="CalContainer" style={{width:"95%", height:"340px", marginTop: "10px",boxShadow: "0px 0px 8px 5px rgb(0 0 0 / 20%)", borderRadius: "10px"}}>
+              <div className="Calhead" style={{border: "1px solid #B2BEB5",width:"89.2%", height:"20%", marginLeft: "12px", borderBottom:" 3px solid #2196f3"}}>
+              
+              
+              <div className="leftArrowbtn" onClick={() => setMonthnumber(month-1)}
+                style={{width:"35px", float:"left", marginTop:"30px", marginLeft: "35px"}}>
+                <span class="leftArrow"><a class="arrow" style={{transform:"rotate(180deg)"}}></a></span>
+              </div>
+              <div class="currDetail" style={{width: "60%",marginTop: "21px",float: "left", height: "35px"}}>
+                  <div class="content" style={{textAlign:"center",marginTop:"5px"}}>
+                    {getMonthName(month)+" / "+year}
+                  </div>
+              </div>
+
+              <div class="rightArrowbtn" onClick={() => setMonthnumber(month+1)} 
+                style={{width:"35px", float:"left", marginTop:"30px"}}>
+              <span class="rightArrow">
+                <a class="arrow" style={{transform:"rotate(0deg)"}}></a></span>
+              </div>
+             
+              </div>
+              <div class="CalBody" style={{width:"94.7%", height:"80%", marginLeft: "12px"}}>
+             
+                <div className='CalBodyContainerHead' style={{ width:"100%", height:"10%"}}>
+                    {weeks.map((weekdays,i)=><div key={i} className='weekName' style = {{ border: "1px solid #B2BEB5",borderTop:" 1px solid #2196f3",  width:"13%", height:"35px", float:"left",textAlign: "center"}}>{weekdays}</div>)}
+                </div>
+                <div className='CalBodyContainerBody' style={{ width:"100%", height:"90%"}}>
+                  {renderBody(year, month)}
+                </div>
+              
+              </div>
+            </div>) : ''}
+
+          </div>
+            
+            
+        </React.Fragment>
+    );
+}
+
+export default Polar;
