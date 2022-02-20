@@ -124,3 +124,307 @@ function Polar() {
 }
 
 export default Polar;
+
+********************************************************************************************************************************************************************
+
+import React, { useState, useRef, useEffect, RefObject } from "react";
+import './DatePicker.scss';
+import { getMonthName, onDateClick, setmonthDetails } from './DatePickerFunction';
+
+function DatePicker() {
+  const contRef = useRef(null);
+  const [date, setDate] = useState(new Date().getDate());
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth()); // return month index so, Jan is 0 , Feb is 1 and s on 
+  const [showCalendar, setshowCalendar] = useState(false);
+
+  const weeks = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  // const inputRef = React.createRef()
+  const inputRef: RefObject<HTMLInputElement> = React.createRef()
+
+  useEffect(() => {
+
+    const calendarHide = (e) => {
+
+      if (showCalendar && contRef && !contRef.current.contains(e.target)) {
+        // console.log(showCalendar && contRef && !contRef.current.contains(e.target))
+        setshowCalendar(false);
+      }
+    };
+    window.addEventListener("click", calendarHide);
+    return () => {
+      window.removeEventListener("click", calendarHide);
+    };
+
+  }, [showCalendar]);
+
+  const setMonthnumber = (monthindex) => {
+    let mon = monthindex;
+    let yr = year;
+
+    if (mon === 12) {
+      mon = 0;
+      yr = yr + 1;
+    }
+
+    if (mon === -1) {
+      mon = 11;
+      yr = yr - 1;
+
+    }
+    setMonth(mon);
+    setYear(yr)
+  }
+
+  const isCurrentDay = day => {
+
+    var selectedDate = String(new Date(day.year, day.month, day.date));
+    var currentDate = String(new Date(Date.now()));
+    var tm = selectedDate.split(" ");
+    var dayDetail = currentDate.split(" ");
+    console.log(day.month, day.year, day.date);
+
+    return (Number(dayDetail[2]) === Number(tm[2]) && dayDetail[1] === tm[1] && dayDetail[3] === tm[3])
+  }
+
+  const renderBody = (year, month) => {
+
+    let monthDetails = setmonthDetails(year, month)
+
+    const daysMarkup = monthDetails.map((day, index) => (isCurrentDay(day)) ? (
+
+      <div className="currentDate" onClick={() => onDateClick(day, inputRef)} onDoubleClick={() => setshowCalendar(false)}>
+        <span id={day.date + " " + day.month + " " + day.year} onClick={() => onDateClick(day, inputRef)} onDoubleClick={() => setshowCalendar(false)}>{day.date}</span>
+      </div>) : (
+
+      <div className="selectedDate" onClick={() => onDateClick(day, inputRef)} onDoubleClick={() => setshowCalendar(false)}>
+        <span id={day.date + " " + day.month + " " + day.year} onClick={() => onDateClick(day, inputRef)} onDoubleClick={() => setshowCalendar(false)}>{day.date}</span>
+      </div>));
+    return daysMarkup;
+  }
+
+  return (
+    <React.Fragment>
+      <div className="main" >
+        {/* ref={contRef} */}
+
+        <input className="input" ref={inputRef} onClick={() => setshowCalendar(true)} />
+        {showCalendar ? (
+          <div className="CalContainer" >
+            <div className="Calhead" >
+
+
+              <div className="leftArrowbtn" onClick={() => setMonthnumber(month - 1)}>
+                <span className="leftArrow"><a className="leftarrow" ></a></span>
+              </div>
+              <div className="currDetail" >
+                <div className="content" >
+                  {getMonthName(month) + " / " + year}
+                </div>
+              </div>
+
+              <div className="rightArrowbtn" onClick={() => setMonthnumber(month + 1)} >
+                <span className="rightArrow">
+                  <a className="rightarrow" ></a></span>
+              </div>
+
+            </div>
+            <div className="CalBody" >
+
+              <div className='CalBodyContainerHead' >
+                {weeks.map((weekdays, i) => <div key={i} className='weekName' >{weekdays}</div>)}
+              </div>
+              <div className='CalBodyContainerBody' >
+                {renderBody(year, month)}
+              </div>
+
+            </div>
+          </div>) : ''}
+
+      </div>
+
+
+    </React.Fragment>
+  );
+}
+
+export default DatePicker;
+
+*********************************************************************************************************************************************************************
+
+const monthMap = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+export const getMonthName = (monthindex) => monthMap[monthindex]
+
+export const onDateClick = (day, inputRef) => {
+
+  var tm = new Date(day.year, day.month, day.date).getTime();
+  var dayDetail = String(new Date(tm));
+  var selectedDay = dayDetail.split(" ")
+  console.log(day.month, day.year, day.date);
+  inputRef.current.value = Number(selectedDay[2]) + " / " + selectedDay[1] + " / " + selectedDay[3];
+
+}
+
+export const setmonthDetails = (year, month) => {
+
+  let MonthDayIndex = new Date(year, month).getDay(); // current month satrting Index
+  let Prevdays = new Date(year, month, 0).getDate(); // Previous month number of days
+  let days = new Date(year, month + 1, 0).getDate(); // Current month number of days
+  let Priordays = new Date(year, month + 2, 0).getDate(); // Next month number of days
+
+  var monthDetails = [];
+  var daysCal;
+
+  for (var preMonthIndex = MonthDayIndex; preMonthIndex >= 1 && monthDetails.length < 42; preMonthIndex--) {
+    var _date = Prevdays - preMonthIndex + 1;
+    daysCal = {
+      date: _date,
+      month: (month === 0) ? 11 : month - 1,
+      year: (month === 0) ? year - 1 : year
+    };
+    monthDetails.push(daysCal);
+  }
+
+  for (var currMonthIndex = 1; currMonthIndex <= days && monthDetails.length < 42; currMonthIndex++) {
+
+    daysCal = {
+      date: currMonthIndex,
+      month: month,
+      year: year
+    };
+    monthDetails.push(daysCal);
+  }
+
+  for (var nextMonthIndex = 1; nextMonthIndex <= Priordays && monthDetails.length < 42; nextMonthIndex++) {
+
+    daysCal = {
+      date: nextMonthIndex,
+      month: (month === 11) ? 0 : month + 1,
+      year: (month === 11) ? year + 1 : year
+    };
+    monthDetails.push(daysCal);
+  }
+  return monthDetails;
+}
+
+***********************************************************************************************************************************************************
+
+a {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: 10px 15px 10px 10px;
+    position: relative;
+    text-decoration: none;
+}
+
+a:before, a:after {
+    border-right: 2px solid;
+    content: '';
+    display: block;
+    height: 8px;
+    margin-top: -6px;
+    position: absolute;
+    transform: rotate(135deg);
+    right: 10px;
+    top: 50%;
+    width: 0;
+}
+
+a:after {
+    margin-top: -1px;
+    transform: rotate(45deg);
+}
+
+.CalContainer {
+    width:"95%";
+    height:"340px";
+    margin-top: "10px";
+    box-shadow: "0px 0px 8px 5px rgb(0 0 0 / 20%)";
+    border-radius: "10px";
+}
+
+.leftArrowbtn {
+    width:"35px";
+    float:"left";
+    margin-top:"30px";
+    margin-left: "35px";
+}
+
+.leftarrow {
+    transform:"rotate(180deg)"
+}
+
+.currDetail {
+    width: "60%";
+    margin-top: "21px";
+    float: "left";
+    height: "35px"
+}
+
+.content {
+    text-align:"center";
+    margin-top:"5px"
+}
+
+.rightArrowbtn {
+    width:"35px";
+    float:"left";
+    margin-top:"30px"
+}
+
+.rightarrow {
+    transform:"rotate(0deg)"
+}
+
+.CalBody {
+    width:"94.7%";
+    height:"80%";
+    margin-left: "12px"
+}
+
+.CalBodyContainerHead {
+    width:"100%";
+    height:"10%"
+}
+
+.weekName {
+    border: "1px solid #B2BEB5";
+    border-top:" 1px solid #2196f3";
+    width:"13%";
+    height:"35px";
+    float:"left";
+    text-align: "center"
+}
+
+.CalBodyContainerBody {
+    width:"100%";
+    height:"90%"
+}
+
+.currentDate {
+    background-color:"#2196f3";
+    width:"13%";
+    height:"35px";
+    float:"left";
+    text-align: "center";
+    border: "1px solid #B2BEB5"!important
+}
+
+.selectedDate {
+    width:"13%";
+    height:"35px";
+    float:"left";
+    text-align: "center";
+    border: "1px solid #B2BEB5"
+}
+
+.input {
+    width:"90%";
+    margin-left: "7px"
+}
+
+.main {
+    width:"33%"
+}
+****************************************************************************************************************************************************************
