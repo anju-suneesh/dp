@@ -1,1 +1,263 @@
+import React from "react";
+import "./Switch.css";
 
+//newly added line 5
+const getLabelPosition = (position) => {
+  switch (position) {
+    case "bottom":
+      return "column";
+    case "left":
+      return "row-reverse";
+    case "right":
+      return "row";
+    default:
+      return "column-reverse"
+  }
+}
+
+const Switch = ({ isOn, handleToggle, onColor, position, size, disabled }) => {
+
+
+
+  return (
+    //newly added line 21
+    <div className={`
+        toggle-switch
+        
+        `
+    } style={{ flexDirection: getLabelPosition(position) }}>
+
+      <input
+        checked={isOn}
+        onChange={handleToggle}
+        className="react-switch-checkbox"
+        id={`react-switch-new`}
+        type="checkbox"
+        disabled={disabled}
+      />
+      <label
+        style={{ background: isOn && onColor }}
+        className={`
+        ${!disabled && size === 'small' && 'react-small-switch-label'}
+        ${!disabled && size === 'medium' && 'react-medium-switch-label'}
+        ${!disabled && size === 'large' && 'react-large-switch-label'}
+        ${disabled && size === 'small' && 'react-small-switch-label'}
+        ${disabled && size === 'medium' && 'react-medium-switch-label'}
+        ${disabled && size === 'large' && 'react-large-switch-label'}
+      `}
+        htmlFor={`react-switch-new`}
+      >
+        <span className={`react-switch-button`} />
+      </label>
+      {/* newly added line 38 */}
+      <span className="toggle-switch-text">toggle label!!!!!</span>
+    </div>
+  );
+};
+
+export default Switch;
+
+******************************************************************************************************
+
+/* newly added toggle switch  */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    font-weight: 600;
+    max-width: 100%;
+    position: relative;
+  }
+  
+  .react-switch-checkbox {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+  }
+  
+  .react-large-switch-label {
+
+    display: flex;
+/* newly added margin-left and margin-right  */
+    margin-left: 10px; 
+    margin-right: 10px;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 100px;
+    height: 50px;
+    background: grey;
+    border-radius: 100px;
+    position: relative;
+    transition: background-color 0.2s;
+  }
+  .react-large-switch-label .react-switch-button {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 45px;
+    height: 45px;
+    border-radius: 45px;
+    transition: 0.2s;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(10, 10, 10, 0.29);
+  }
+  
+  .react-medium-switch-label {
+
+    display: flex;
+/* newly added margin-left and margin-right  */
+    margin-left: 10px; 
+    margin-right: 10px;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 75px;
+    height: 40px;
+    background: grey;
+    border-radius: 100px;
+    position: relative;
+    transition: background-color 0.2s;
+  }
+  .react-medium-switch-label .react-switch-button {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 35px;
+    height: 36px;
+    border-radius: 45px;
+    transition: 0.2s;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(10, 10, 10, 0.29);
+  }
+
+  .react-small-switch-label {
+
+    display: flex;
+/* newly added margin-left and margin-right  */
+    margin-left: 10px; 
+    margin-right: 10px;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 55px;
+    height: 30px;
+    background: grey;
+    border-radius: 100px;
+    position: relative;
+    transition: background-color 0.2s;
+  }
+  .react-small-switch-label .react-switch-button {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 25px;
+    height: 25px;
+    border-radius: 45px;
+    transition: 0.2s;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(10, 10, 10, 0.29);
+  }
+
+  .react-switch-checkbox:checked + .react-large-switch-label .react-switch-button ,
+  .react-switch-checkbox:checked + .react-medium-switch-label .react-switch-button,
+  .react-switch-checkbox:checked + .react-small-switch-label .react-switch-button{
+    left: calc(100% - 2px);
+    transform: translateX(-100%);
+  }
+  
+  .react-large-switch-label:active .react-switch-button {
+    width: 60px;
+  }
+
+  .react-medium-switch-label:active .react-switch-button {
+    width: 60px;
+  }
+
+  .react-small-switch-label:active .react-switch-button {
+    width: 60px;
+  }
+
+*********************************************************************************************
+
+import React, { useState } from "react";
+import Switch from "../Switch";
+//import CircleGraph from "./CircleGraph";
+//import LineGraph from "./LineGraph";
+//import BarChart from "./BarChart";
+//import { ScatterPlot } from "./ScatterPlot";
+// import HeatMap from "./HeatMap"
+import './App.css';
+import RangeBarChart from "./RangeBarChart";
+//import AreaChart from "./AreaChart";
+//import RangeAreaChart from "./RangeAreaChart";
+//import BarExp from "./BarExp";
+//import { scatterData } from "./data/inputData";
+//import DonutGraph from "./DonutGraph";
+//import Donut from "./Donut";
+//import Array from "./Array";
+//import DonutChart from "./DonutChart";
+//import RangeBar from "./RangeBar";
+//import Range from "./Range";
+
+
+function App({ title, id, state }, onArchiveTask, onPinTask) {
+
+  const [size, setSize] = useState('large');
+  const [disabled, setDisabled] = useState(false);
+  return (
+    <React.Fragment>
+      {/* <div className="list-item">
+        <input type="text" value={title} id={id} readOnly={true} />
+      </div> */}
+      {/* <CircleGraph></CircleGraph> */}
+      <br />
+      {/* <RangeBarChart /> */}
+      {/* <LineGraph></LineGraph> */}
+      {/* <ScatterPlot /> */}
+      <br />
+      {/* <BarChart></BarChart> */}
+      {/* <ScatterPlot scatterData={scatterData}></ScatterPlot>  */}
+      {/* <HeatMap></HeatMap> */}
+      <div>
+        <label>
+          size
+          small
+          <input type="radio" name="size" value="small" checked={size === 'small' ? "checked" : ""}
+            onChange={(e) => setSize(e.target.value)} />
+          <br />
+          medium
+          <input type="radio" name="size" value="medium" checked={size === 'medium' ? "checked" : ""}
+            onChange={(e) => setSize(e.target.value)} />
+          <br />
+          large
+          <input type="radio" name="size" value="large" checked={size === 'large' ? "checked" : ""}
+            onChange={(e) => setSize(e.target.value)} />
+          <br />
+        </label>
+        <br />
+        <label>
+          Disabled
+          True
+          <input type="radio" name="disabled" value={true} checked={disabled ? "checked" : ""}
+            onChange={(e) => setDisabled(true)} />
+          <br />
+          False
+          <input type="radio" name="disabled" value={false} checked={!disabled ? "checked" : ""}
+            onChange={(e) => setDisabled(false)} />
+          <br />
+        </label>
+      </div>
+      <Switch
+        size={size}
+        disabled={disabled} 
+        />
+    </React.Fragment>
+  );
+}
+
+export default App;
+******************************************************************************************
