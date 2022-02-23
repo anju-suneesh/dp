@@ -1,0 +1,247 @@
+import React, { useState, useRef, useEffect } from "react";
+import './Rangepicker.css';
+import { getMonthName, onDateClick, setmonthDeatsils } from './rangepickerFunc'
+
+function Polar() {
+    const contRef = useRef(null);
+    window.sDate = null;
+    window.eDate = null;
+    window.startDate = null;
+    window.endDate = null;
+
+    const [year, setYear] = useState(new Date().getFullYear());
+    const [month, setMonth] = useState(new Date().getMonth()); // return month index so, Jan is 0 , Feb is 1 and s on 
+    const [showCalendar, setshowCalendar] = useState(false);
+    
+    const weeks = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const inputRef = React.createRef()
+    const EndinputRef = React.createRef();
+
+    useEffect(() => { 
+
+      const calendarHide = (e) => {
+        
+        if(showCalendar && contRef && !contRef.current.contains(e.target)) {
+          
+           setshowCalendar(false);
+        }
+      };
+      window.addEventListener("click", calendarHide);
+      return () => {
+        window.removeEventListener("click", calendarHide);
+      };
+      
+    }, [showCalendar]);
+
+    const setMonthnumber = (monthinx) => {
+        let mon = monthinx;
+        let yr = year;
+
+        if(mon === 12){
+          mon = 0;
+          yr = yr + 1;
+        }
+        
+        if(mon === -1){
+          mon = 11;
+          yr = yr - 1;
+          
+        }
+          setMonth(mon);
+          setYear(yr)
+    }
+
+    const renderBody = ( year, month ) => {
+
+      let monthDetails = setmonthDeatsils(year, month)
+      
+      const daysMarkup = monthDetails.map((day, index) => 
+        
+      <div onClick={() => (onDateClick(day, inputRef, EndinputRef) ? '': setshowCalendar(false))} onDoubleClick={()=> setshowCalendar(false)}
+        style = {{"width":"13%",height:"35px",float:"left",textAlign: "center",border: "1px solid #B2BEB5"}}>
+        <span>{day.date}</span>
+      </div>);
+     return daysMarkup;
+    }
+
+    return (
+      <React.Fragment>
+        <div ref={contRef}>
+
+        <div style={{width:"130px",height:"35px", borderRadius:"10px", marginLeft:"10px", float:"left"}}>
+
+          <input ref={inputRef} onClick={()=> setshowCalendar(true)} />
+
+        </div>
+
+          <div style={{width:"130px",height:"35px", borderRadius:"10px", marginLeft:"50px", float:"left"}}>
+
+          <input ref={EndinputRef} onClick={()=> setshowCalendar(true)} />
+
+          </div>
+          {showCalendar ? (
+            <div className='Container' style={{"float": "left", "position": "absolute", "left":0,"top": "40px","width": "300px","min-height": "350px","background": "#fff","box-shadow": "10px 10px 40px rgba(0,0,0,0.2)","border-radius": "20px","overflow": "hidden","padding": "25px 30px"}}>
+            <div className='ContainerHead' style={{"float": "left", "width": "100%", "height": "53px"}}>
+            <div className="leftArrowbtn" onClick={() => setMonthnumber(month-1)}
+                style={{width:"10%", float:"left"}}>
+                <span class="leftArrow"><a class="arrow" style={{transform:"rotate(180deg)"}}></a></span>
+              </div>
+              <div class="currDetail" style={{width: "80%",float: "left", height: "35px"}}>
+                  <div class="content" style={{textAlign:"center",marginTop:"-5px"}}>
+                    {getMonthName(month)+" / "+year}
+                  </div>
+              </div>
+  
+              <div class="rightArrowbtn" onClick={() => setMonthnumber(month+1)}
+                style={{width:"10%", float:"left"}}>
+              <span class="rightArrow">
+                <a class="arrow" style={{transform:"rotate(0deg)"}}></a></span>
+              </div>
+            </div>
+            <div className='ContainerBody' style={{"float": "left", "width": "100%", "margin-top": "20px"}}>
+            <div className='CalBodyContainerHead'>
+                    {weeks.map((weekdays,i)=><div key={i} className='weekName' style = {{ border: "1px solid #B2BEB5",borderTop:" 3px solid #2196f3",  width:"13%", height:"35px", float:"left",textAlign: "center"}}>{weekdays}</div>)}
+                </div>
+                <div className='CalBodyContainerBody' >
+                  {renderBody(year, month)}
+                </div>
+            </div>
+            </div>
+          ) : ''}
+
+          
+
+        </div>
+      </React.Fragment>
+    );
+}
+
+export default Polar;
+**********************************************************************************************************************************8
+
+const monthMap = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+export const getMonthName = (monthindex) => monthMap[monthindex]
+
+export const onDateClick = (day, inputRef, EndinputRef) => {
+    
+    if(window.startDate ===  null){
+      window.startDate = new Date(day.year,day.month,day.date);
+      window.sDate = day.date+"/"+getMonthName(day.month)+"/"+day.year;
+      inputRef.current.value = window.sDate;
+    }
+    else if(window.startDate !==  null){
+      window.endDate = new Date(day.year,day.month,day.date);
+      window.eDate = day.date+"/"+getMonthName(day.month)+"/"+day.year;
+    }
+    if (window.startDate !== null && window.endDate !== null)
+    {
+      if(window.startDate.getTime() < window.endDate.getTime())
+      {
+        inputRef.current.value = window.sDate;
+        EndinputRef.current.value = window.eDate;
+      }
+      else 
+      {
+        inputRef.current.value = window.eDate;
+        EndinputRef.current.value = window.sDate;
+      }
+      return false;
+    }
+    else
+      return true;
+    
+  }
+
+  export const setmonthDeatsils = ( year, month ) => {
+
+    let MonthDayIndex = new Date(year, month).getDay(); // current month satrting Index
+    let Prevdays = new Date(year, month, 0).getDate(); // Previous month number of days
+    let days =new Date(year, month+1, 0).getDate(); // Current month number of days
+    let Priordays =new Date(year, month+2, 0).getDate(); // Next month number of days
+   
+    var monthDetails  = [] ; 
+    var daysCal;
+
+    for(var preMonthIndex = MonthDayIndex ; preMonthIndex >=1 && monthDetails.length < 42; preMonthIndex--){
+      var _date = Prevdays-preMonthIndex + 1;
+      daysCal={
+        date:_date,
+        month: (month === 0) ? 11 : month - 1,
+        year: (month === 0) ? year - 1 : year 
+      };
+      monthDetails.push(daysCal);
+    }
+
+    for(var currMonthIndex = 1 ; currMonthIndex <= days && monthDetails.length < 42; currMonthIndex++){
+      
+      daysCal={
+        date:currMonthIndex,
+        month: month,
+        year: year
+      };
+      monthDetails.push(daysCal);
+    }
+
+    for(var nextMonthIndex = 1 ; nextMonthIndex <= Priordays && monthDetails.length < 42; nextMonthIndex++){
+      
+      daysCal={
+        date:nextMonthIndex,
+        month: (month === 11) ? 0 : month + 1,
+        year: (month === 11) ? year + 1 : year 
+      };
+      monthDetails.push(daysCal);
+    }
+    return monthDetails;
+  }
+  
+  *************************************************************************************************************************************
+  
+  a {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: 10px 15px 10px 10px;
+    position: relative;
+    text-decoration: none;
+}
+
+a:before, a:after {
+    border-right: 2px solid;
+    content: '';
+    display: block;
+    height: 8px;
+    margin-top: -6px;
+    position: absolute;
+    transform: rotate(135deg);
+    right: 10px;
+    top: 50%;
+    width: 0;
+}
+
+a:after {
+    margin-top: -1px;
+    transform: rotate(45deg);
+}
+
+.highlight {
+
+    background-color:#2196f3;
+    width:13%;
+    height:35px;
+    float:left;
+    text-align: center;
+    border: 1px solid #B2BEB5
+    
+}
+
+.nonhighlight {
+
+    width:13%;
+    height:35px;
+    float:left;
+    text-align: center;
+    border: 1px solid #B2BEB5
+    
+}
+
+    
