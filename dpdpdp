@@ -1,0 +1,421 @@
+import React, { useState, useRef, useEffect } from "react";
+import "./DatePicker.scss";
+import { DatePickerProps } from "./DatePicker.types";
+import {
+  getMonthName,
+  onDateClick,
+  setmonthDetails,
+} from "./DatePickerFunction";
+
+/**
+ * Enable and Disable input field of DatePicker.
+ * DatePicker Library to perform from input given.
+ * Control the date value and popup state of the DatePicker.
+ * Configure the initial focused date that the DatePicker displays.
+ */
+
+const DatePicker: React.FC<DatePickerProps> = (props: DatePickerProps) => {
+  const { disabled } = props;
+  const contRef = useRef(null);
+  // const [date, setDate] = useState(new Date().getDate());
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth()); // return month index so, Jan is 0 , Feb is 1 and s on
+  const [showCalendar, setshowCalendar] = useState<boolean>(false);
+
+  const weeks = ["S", "M", "T", "W", "T", "F", "S"];
+  const inputRef: React.RefObject<HTMLInputElement> = React.createRef();
+
+  useEffect(() => {
+    const calendarHide = (e: Event) => {
+      e.preventDefault();
+      if (showCalendar && contRef && !contRef.current.contains(e.target)) {
+        // console.log(showCalendar && contRef && !contRef.current.contains(e.target))
+        setshowCalendar(false);
+      }
+    };
+    window.addEventListener("click", calendarHide);
+    return () => {
+      window.removeEventListener("click", calendarHide);
+    };
+  }, [showCalendar]);
+
+  const setMonthnumber = (monthinx) => {
+    let mon = monthinx;
+    let yr = year;
+
+    if (mon === 12) {
+      mon = 0;
+      yr = yr + 1;
+    }
+
+    if (mon === -1) {
+      mon = 11;
+      yr = yr - 1;
+    }
+    setMonth(mon);
+    setYear(yr);
+  };
+
+  const isCurrentDay = (day) => {
+    var currentDate: any = String(new Date(day.year, day.month, day.date));
+    var selectDate = String(new Date(Date.now()));
+    var tm = currentDate.split(" ");
+    var dayDetail = selectDate.split(" ");
+    console.log(day.month, day.year, day.date);
+
+    return (
+      Number(dayDetail[2]) === Number(tm[2]) &&
+      dayDetail[1] === tm[1] &&
+      dayDetail[3] === tm[3]
+    );
+  };
+
+  const renderBody = (year, month) => {
+    let monthDetails = setmonthDetails(year, month);
+
+    const daysMarkup = monthDetails.map((day, index) =>
+      isCurrentDay(day) ? (
+        <div
+          className="currentDate"
+          onClick={() => onDateClick(day, inputRef)}
+          onDoubleClick={() => setshowCalendar(false)}
+        >
+          <span
+            id={day.date + " " + day.month + " " + day.year}
+            onClick={() => onDateClick(day, inputRef)}
+            onDoubleClick={() => setshowCalendar(false)}
+          >
+            {day.date}
+          </span>
+        </div>
+      ) : (
+        <div
+          className="selectedDate"
+          onClick={() => onDateClick(day, inputRef)}
+          onDoubleClick={() => setshowCalendar(false)}
+        >
+          <span
+            id={day.date + " " + day.month + " " + day.year}
+            onClick={() => onDateClick(day, inputRef)}
+            onDoubleClick={() => setshowCalendar(false)}
+          >
+            {day.date}
+          </span>
+        </div>
+      )
+    );
+    return daysMarkup;
+  };
+  console.log(disabled);
+  return (
+    <React.Fragment>
+      <div ref={contRef} className="main">
+        <input
+          className={`DatePicker ${props.disabled === true ? "disabled" : ""}`}
+          placeholder="dd/mm/yyyy"
+          disabled={props.disabled}
+          readOnly
+          ref={inputRef}
+          onClick={() => setshowCalendar(true)}
+        /> 
+        <div className="divider">|</div>
+       <img
+          className="icon"
+          src="https://www.pinclipart.com/picdir/big/173-1733572_calendar-check-svg-png-icon-free-download-calendar.png"
+        />
+
+        {showCalendar ? (
+          <div className="CalContainer">
+            <div className="CalHead">
+              <div
+                className="leftArrowbtn"
+                onClick={() => setMonthnumber(month - 1)}
+              >
+                <span className="leftArrow">
+                  <a className="leftarrow"></a>
+                </span>
+              </div>
+              <div className="currDetail">
+                <div className="content">
+                  <b>{getMonthName(month) + " / " + year}</b>
+                </div>
+              </div>
+
+              <div
+                className="rightArrowbtn"
+                onClick={() => setMonthnumber(month + 1)}
+              >
+                <span className="rightArrow">
+                  <a className="rightarrow"></a>
+                </span>
+              </div>
+            </div>
+            <div className="CalBody">
+              <div className="CalBodyContainerHead">
+                {weeks.map((weekdays, i) => (
+                  <div key={i} className="weekName">
+                    {weekdays}
+                  </div>
+                ))}
+              </div>
+              <div className="CalBodyContainerBody">
+                {renderBody(year, month)}
+              </div>
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
+      </div>
+    </React.Fragment>
+  );
+};
+
+export default DatePicker;
+*****************************************************************************************************************
+
+const monthMap = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+export const getMonthName = (monthindex: number) => monthMap[monthindex];
+
+export const onDateClick = (day, inputRef) => {
+  var tm = new Date(day.year, day.month, day.date).getTime();
+  var dayDetail = String(new Date(tm));
+  var selectedDay = dayDetail.split(" ");
+  console.log(day.month, day.year, day.date);
+  inputRef.current.value =
+    Number(selectedDay[2]) + " / " + (day.month+1) + " / " + selectedDay[3];
+};
+
+export const setmonthDetails = (year: number, month: number) => {
+  let MonthDayIndex = new Date(year, month).getDay(); // current month satrting Index
+  let Prevdays = new Date(year, month, 0).getDate(); // Previous month number of days
+  let days = new Date(year, month + 1, 0).getDate(); // Current month number of days
+  let Priordays = new Date(year, month + 2, 0).getDate(); // Next month number of days
+
+  var monthDetails = [];
+  var daysCal;
+
+  for (
+    var preMonthIndex = MonthDayIndex;
+    preMonthIndex >= 1 && monthDetails.length < 42;
+    preMonthIndex--
+  ) {
+    var _date = Prevdays - preMonthIndex + 1;
+    daysCal = {
+      date: _date,
+      month: month === 0 ? 11 : month - 1,
+      year: month === 0 ? year - 1 : year,
+    };
+    monthDetails.push(daysCal);
+  }
+
+  for (
+    var currMonthIndex = 1;
+    currMonthIndex <= days && monthDetails.length < 42;
+    currMonthIndex++
+  ) {
+    daysCal = {
+      date: currMonthIndex,
+      month: month,
+      year: year,
+    };
+    monthDetails.push(daysCal);
+  }
+
+  for (
+    var nextMonthIndex = 1;
+    nextMonthIndex <= Priordays && monthDetails.length < 42;
+    nextMonthIndex++
+  ) {
+    daysCal = {
+      date: nextMonthIndex,
+      month: month === 11 ? 0 : month + 1,
+      year: month === 11 ? year + 1 : year,
+    };
+    monthDetails.push(daysCal);
+  }
+  return monthDetails;
+};
+****************************************************************************************************
+
+.DatePicker {
+    top: 274px;
+    left: 180px;
+    width: 159px;
+    height: 28px;
+    background: #ffffff 0% 0% no-repeat padding-box;
+    border: 1px solid #bbbbbb;
+    border-radius: 2px;
+    opacity: 1;
+    margin-left: 10px;
+    padding: 6px;
+  &.disabled{
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+.DatePicker .disabled:hover{
+cursor: not-allowed !important;
+}
+
+.icon {
+height: 14px;
+width: 15px;
+padding-left: 10px;
+position: absolute;
+margin-left: -30px;
+margin-top: 7px;
+}
+
+a {
+display: inline-block;
+font-family: Arial, Helvetica, sans-serif;
+font-weight: bold;
+padding: 10px 15px 10px 10px;
+position: relative;
+text-decoration: none;
+}
+
+a:before, a:after {
+border-right: 2px solid;
+content: '';
+display: block;
+height: 8px;
+margin-top: -6px;
+position: absolute;
+transform: rotate(135deg);
+right: 10px;
+top: 50%;
+width: 0;
+}
+
+a:after {
+margin-top: -1px;
+transform: rotate(45deg);
+}
+
+.CalContainer {
+width: 80%;
+height:350px;
+margin-top: 10px;
+box-shadow: 0px 0px 8px 5px lightgrey;
+border-radius: 5px;
+text-align: center;
+}
+
+.CalHead {
+// border:1px solid #B2BEB5;
+width:89.2%;
+height:20%;
+margin-left: 10px;
+margin-right: 10px;
+border-bottom: 3px solid #2196f3;
+}
+
+.leftArrowbtn {
+width:32px;
+height:32px;
+float:left;
+margin-top:10px;
+margin-left: 10px;
+padding-top: 10px;
+border: 1px solid lightgrey;
+border-radius: 2px;
+}
+
+.leftarrow {
+transform:rotate(180deg)
+}
+
+.currDetail {
+width: 60%;
+margin-top: 21px;
+float: left;
+height: 35px
+}
+
+.content {
+text-align:center;
+margin-top:5px
+}
+
+.rightArrowbtn {
+width:32px;
+height:32px;
+margin-top:10px;
+margin-right: 10px;
+padding-top: 10px;
+float:left;
+border: 1px solid lightgrey;
+border-radius: 2px;
+}
+
+.rightarrow {
+transform:rotate(0deg)
+}
+
+.CalBody {
+width:94.7%;
+height:80%;
+margin-left: 12px
+}
+
+.CalBodyContainerHead {
+width:100%;
+height:10%
+}
+
+.weekName {
+// border: 1px solid #B2BEB5;
+border-top: 1px solid #2196f3;
+width:13%;
+height:35px;
+float:left;
+text-align: center
+}
+
+.CalBodyContainerBody {
+width:100%;
+height:90%
+}
+
+.currentDate {
+background-color:#2196f3;
+width:13%;
+height:35px;
+float:left;
+text-align: center;
+border: 1px solid #B2BEB5
+}
+
+.selectedDate {
+width:13%;
+height:35px;
+float:left;
+text-align: center;
+border: 1px solid #B2BEB5
+}
+
+.main {
+width:33%
+}
+
+.divider {
+margin-left: 143px;
+position: absolute;
+margin-top: -24px;
+}
+*******************************************************************************************
