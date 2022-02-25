@@ -453,49 +453,55 @@ export const getMonthName = (monthindex) => monthMap[monthindex]
 
   RANGEPICKER CSS
   
-  const monthMap = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-export const getMonthName = (monthindex) => monthMap[monthindex]
+  a {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: 10px 15px 10px 10px;
+    position: relative;
+    text-decoration: none;
+}
 
-  export const setmonthDeatsils = ( year, month ) => {
+a:before, a:after {
+    border-right: 2px solid;
+    content: '';
+    display: block;
+    height: 8px;
+    margin-top: -6px;
+    position: absolute;
+    transform: rotate(135deg);
+    right: 10px;
+    top: 50%;
+    width: 0;
+}
 
-    let MonthDayIndex = new Date(year, month).getDay(); // current month satrting Index
-    let Prevdays = new Date(year, month, 0).getDate(); // Previous month number of days
-    let days =new Date(year, month+1, 0).getDate(); // Current month number of days
-    let Priordays =new Date(year, month+2, 0).getDate(); // Next month number of days
-   
-    var monthDetails  = [] ; 
-    var daysCal;
+a:after {
+    margin-top: -1px;
+    transform: rotate(45deg);
+}
 
-    for(var preMonthIndex = MonthDayIndex ; preMonthIndex >=1 && monthDetails.length < 42; preMonthIndex--){
-      var _date = Prevdays-preMonthIndex + 1;
-      daysCal={
-        date:_date,
-        month: (month === 0) ? 11 : month - 1,
-        year: (month === 0) ? year - 1 : year 
-      };
-      monthDetails.push(daysCal);
-    }
+.highlight {
 
-    for(var currMonthIndex = 1 ; currMonthIndex <= days && monthDetails.length < 42; currMonthIndex++){
-      
-      daysCal={
-        date:currMonthIndex,
-        month: month,
-        year: year
-      };
-      monthDetails.push(daysCal);
-    }
+    background-color:#2196f3;
+    width:13%;
+    height:35px;
+    float:left;
+    text-align: center;
+    border: 1px solid #B2BEB5
+    
+}
 
-    for(var nextMonthIndex = 1 ; nextMonthIndex <= Priordays && monthDetails.length < 42; nextMonthIndex++){
-      
-      daysCal={
-        date:nextMonthIndex,
-        month: (month === 11) ? 0 : month + 1,
-        year: (month === 11) ? year + 1 : year 
-      };
-      monthDetails.push(daysCal);
-    }
-    return monthDetails;
-  }
+.nonhighlight {
 
-  
+    width:13%;
+    height:35px;
+    float:left;
+    text-align: center;
+    border: 1px solid #B2BEB5
+    
+}
+
+.rangeDate :hover{
+    background-color:#2196f3;
+    border-radius: 30px;
+}
