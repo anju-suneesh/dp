@@ -1,0 +1,327 @@
+CALENDAR
+
+import React, { useState, useRef, useEffect } from "react";
+import './Rangepicker.css';
+import { getMonthName, setmonthDeatsils } from './rangepickerFunc'
+import Dayscalc from "./DaysCalendar.js"
+
+function Calendar(props) {
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth()); // return month index so, Jan is 0 , Feb is 1 and s on 
+    
+  const weeks = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  
+  
+  const setMonthnumber = (monthinx) => {
+    let mon = monthinx;
+    let yr = year;
+
+    if(mon === 12){
+      mon = 0;
+      yr = yr + 1;
+    }
+    
+    if(mon === -1){
+      mon = 11;
+      yr = yr - 1;
+      
+    }
+      setMonth(mon);
+      setYear(yr)
+}
+  return (
+  <React.Fragment>
+    {props.allRefs.showCalendar ? (
+      <div className='Container' style={{"float": "left", "position": "absolute", "left":0,"top": "40px","width": "300px","min-height": "350px","background": "#fff","box-shadow": "10px 10px 40px rgba(0,0,0,0.2)","border-radius": "20px","overflow": "hidden","padding": "25px 30px"}}>
+      <div className='ContainerHead' style={{"float": "left", "width": "100%", "height": "53px"}}>
+        <div className="leftArrowbtn" onClick={() => setMonthnumber(month-1)}
+            style={{width:"10%", float:"left"}}>
+          <span class="leftArrow"><a class="arrow" style={{transform:"rotate(180deg)"}}></a></span>
+        </div>
+        <div class="currDetail" style={{width: "80%",float: "left", height: "35px"}}>
+          <div class="content" style={{textAlign:"center",marginTop:"-5px"}}>
+            {getMonthName(month)+" / "+year}
+          </div>
+        </div>
+
+        <div class="rightArrowbtn" onClick={() => setMonthnumber(month+1)}
+          style={{width:"10%", float:"left"}}>
+        <span class="rightArrow">
+          <a class="arrow" style={{transform:"rotate(0deg)"}}></a></span>
+        </div>
+      </div>
+      <div className='ContainerBody' style={{"float": "left", "width": "100%", "margin-top": "20px"}}>
+      <div className='CalBodyContainerHead'>
+          {weeks.map((weekdays,i)=><div key={i} className='weekName' style = {{ border: "1px solid #B2BEB5",borderTop:" 3px solid #2196f3",  width:"13%", height:"35px", float:"left",textAlign: "center"}}>{weekdays}</div>)}
+      </div>
+        <div className='CalBodyContainerBody' >  
+          <Dayscalc value={{year:year, month:month,...props}}/>
+        </div>
+      </div>
+      </div>
+    ) : ''}
+
+  </React.Fragment>
+  );
+}
+
+export default Calendar;
+****************************************************************************************************************************************************************
+DAYSCALENDAR
+
+import { setmonthDeatsils } from './rangepickerFunc'
+import React, { useState, useEffect } from "react";
+import './Polar.css';
+const monthMap = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+export const getMonthName = (monthindex) => monthMap[monthindex]
+
+function Dayscalc(props) {
+  const [sdate, setSdate] = useState();
+  const [edate, setEdate] = useState();
+  
+  useEffect(() => { 
+
+  });
+  
+  const onDateClick = (day) => {
+
+    if(props.value.daysObj.startDate ===  null && props.value.daysObj.endDate === null){
+      
+      props.value.daysObj.startDate = new Date(day.year,day.month,day.date);
+      if (day.date.toString().length === 1) {
+        day.date = "0" + day.date;
+        
+      }
+      
+      props.value.daysObj.sDate = day.date+"/"+(day.month+1)+"/"+day.year;
+      props.value.allRefs.inputRef.current.value = props.value.daysObj.sDate;
+      props.value.allRefs.EndinputRef.current.value = props.value.daysObj.endDate;
+     
+    }
+    
+    else if(props.value.daysObj.startDate !==  null){
+      props.value.daysObj.endDate = new Date(day.year,day.month,day.date);
+      if (day.date.toString().length === 1) {
+        day.date = "0" + day.date;
+      }
+      
+      props.value.daysObj.eDate = day.date+"/"+(day.month+1)+"/"+day.year;
+      
+    }
+    
+    return setRangeDate(props.value.allRefs.inputRef,props.value.allRefs.EndinputRef);
+    
+  }
+
+  const setRangeDate = (inputRef, EndinputRef) =>{
+    if (props.value.daysObj.startDate !== null && props.value.daysObj.endDate !== null)
+    {
+      if(props.value.daysObj.startDate.getTime() < props.value.daysObj.endDate.getTime())
+      {
+        inputRef.current.value = props.value.daysObj.sDate;
+        EndinputRef.current.value = props.value.daysObj.eDate;
+      }
+      else 
+      {
+        inputRef.current.value = props.value.daysObj.eDate;
+        EndinputRef.current.value = props.value.daysObj.sDate;
+      }
+      if(props.value.daysObj.startDate.getTime() > props.value.daysObj.endDate.getTime()){
+        var temp = props.value.daysObj.startDate;
+        props.value.daysObj.startDate = props.value.daysObj.endDate;
+        props.value.daysObj.endDate = temp;
+      }
+      setSdate(props.value.daysObj.startDate);
+      setEdate(props.value.daysObj.endDate);
+      
+      props.value.daysObj.startDate = null;
+      props.value.daysObj.endDate = null;
+      return true;
+    }
+  }
+
+  const setRangeColor = (day) =>{
+    if(sdate !== null && edate !== null && sdate !== undefined && edate !== undefined){
+    
+      var currDate =  new Date(day.year,day.month,day.date).getTime();
+      return (sdate.getTime() <= currDate && edate.getTime() >= currDate)
+    }
+  }
+  const renderBody = ( ) => {
+  let monthDetails = setmonthDeatsils(props.value.year, props.value.month)
+  
+  const daysMarkup = monthDetails.map((day, index) => (
+    <div 
+    onClick={(e) => 
+      {onDateClick(day)}} 
+      className = {(setRangeColor(day) ? ' rangeDate' : '')} 
+      style ={{"width":"13%",height:"35px",float:"left",textAlign: "center",border: "1px solid #B2BEB5"}}>
+        <span>{day.date}</span>
+    </div>
+  ));
+
+  return daysMarkup;
+  }
+  return (
+  <React.Fragment>
+    {renderBody()}
+  </React.Fragment>
+  );
+}
+
+export default Dayscalc;
+************************************************************************************************************************************************************
+
+POLARCSS
+***************************************************************************************************************************************************************
+
+RANGEDATEPICKER
+
+import React, { useState, useRef, useEffect } from "react";
+import './Rangepicker.css';
+import Calendar from "./Calendar.js"
+
+function Polar(props) {
+    const contRef = useRef(null);
+    
+    const obj = {sDate:null,eDate:null,startDate:null,endDate:null}
+    const [showCalendar, setshowCalendar] = useState(false);
+    const inputRef = React.createRef()
+    const EndinputRef = React.createRef();
+
+    useEffect(() => { 
+      const calendarHide = (e) => {
+        if(showCalendar && contRef && !contRef.current.contains(e.target)) {
+           setshowCalendar(false);
+        }
+      };
+      window.addEventListener("click", calendarHide);
+      return () => {
+        window.removeEventListener("click", calendarHide);
+      };
+    }, [showCalendar]);
+
+    return (
+      <React.Fragment>
+        <div ref={contRef}>
+
+          <div style={{width:"172px",height:"35px", borderRadius:"10px", marginLeft:"10px", float:"left"}}>
+            <input ref={inputRef} onClick={()=> setshowCalendar(true)}/>
+          </div>
+
+          <div style={{width:"172px",height:"35px", borderRadius:"10px", float:"left"}}>
+            <input ref={EndinputRef}/>
+          </div>
+          <Calendar allRefs={{ showCalendar,inputRef, EndinputRef}} daysObj={{...obj}}/>
+
+        </div>
+      </React.Fragment>
+    );
+}
+
+export default Polar;
+***************************************************************************************************************************************************************
+RANGEPICKERCSS
+
+a {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: 10px 15px 10px 10px;
+    position: relative;
+    text-decoration: none;
+}
+
+a:before, a:after {
+    border-right: 2px solid;
+    content: '';
+    display: block;
+    height: 8px;
+    margin-top: -6px;
+    position: absolute;
+    transform: rotate(135deg);
+    right: 10px;
+    top: 50%;
+    width: 0;
+}
+
+a:after {
+    margin-top: -1px;
+    transform: rotate(45deg);
+}
+
+.highlight {
+
+    background-color:#2196f3;
+    width:13%;
+    height:35px;
+    float:left;
+    text-align: center;
+    border: 1px solid #B2BEB5
+    
+}
+
+.nonhighlight {
+
+    width:13%;
+    height:35px;
+    float:left;
+    text-align: center;
+    border: 1px solid #B2BEB5
+    
+}
+
+.rangeDate :hover{
+    background-color:#2196f3;
+    border-radius: 30px;
+}
+******************************************************************************************************************************************
+RANGEPICKERFUNC
+
+const monthMap = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+export const getMonthName = (monthindex) => monthMap[monthindex]
+
+  export const setmonthDeatsils = ( year, month ) => {
+
+    let MonthDayIndex = new Date(year, month).getDay(); // current month satrting Index
+    let Prevdays = new Date(year, month, 0).getDate(); // Previous month number of days
+    let days =new Date(year, month+1, 0).getDate(); // Current month number of days
+    let Priordays =new Date(year, month+2, 0).getDate(); // Next month number of days
+   
+    var monthDetails  = [] ; 
+    var daysCal;
+
+    for(var preMonthIndex = MonthDayIndex ; preMonthIndex >=1 && monthDetails.length < 42; preMonthIndex--){
+      var _date = Prevdays-preMonthIndex + 1;
+      daysCal={
+        date:_date,
+        month: (month === 0) ? 11 : month - 1,
+        year: (month === 0) ? year - 1 : year 
+      };
+      monthDetails.push(daysCal);
+    }
+
+    for(var currMonthIndex = 1 ; currMonthIndex <= days && monthDetails.length < 42; currMonthIndex++){
+      
+      daysCal={
+        date:currMonthIndex,
+        month: month,
+        year: year
+      };
+      monthDetails.push(daysCal);
+    }
+
+    for(var nextMonthIndex = 1 ; nextMonthIndex <= Priordays && monthDetails.length < 42; nextMonthIndex++){
+      
+      daysCal={
+        date:nextMonthIndex,
+        month: (month === 11) ? 0 : month + 1,
+        year: (month === 11) ? year + 1 : year 
+      };
+      monthDetails.push(daysCal);
+    }
+    return monthDetails;
+  }
+*****************************************************************************************************************************************
+
+  
