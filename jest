@@ -1,0 +1,9 @@
+import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
+import DatePicker from "./DatePicker";
+
+describe("testcases for datepicker", () => {
+  it("works", () => {
+    const { container } = render(<DatePicker disabled={false} />);
+  });
+});
